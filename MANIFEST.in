@@ -1,0 +1,6 @@
+include CHANGELOG.md
+include LICENSE
+
+recursive-include src/data *.json
+
+exclude test.py
