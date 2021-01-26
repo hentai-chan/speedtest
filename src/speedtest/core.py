@@ -9,6 +9,9 @@ from .speedtest import Speedtest
 
 
 def test_ping(target: str, count: int, size: int) -> dict:
+    """
+    Ping a remote host and handle the responses.
+    """
     now = dt.now(tz=timezone.utc)
     ping_result = ping(target=target, count=count, size=size)
     return {
@@ -23,6 +26,9 @@ def test_ping(target: str, count: int, size: int) -> dict:
     }
 
 def test_bandwidth(threads: int, upload: bool, download: bool) -> dict:
+    """
+    Perform standard speedtest.net testing operations.
+    """
     now = dt.now(tz=timezone.utc)
     test = Speedtest()
     test.get_servers()
