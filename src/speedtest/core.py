@@ -5,7 +5,7 @@ from datetime import timezone
 
 from pythonping import ping
 
-from src.speedtest import Speedtest
+from .speedtest import Speedtest
 
 
 def test_ping(target: str, count: int, size: int) -> dict:
