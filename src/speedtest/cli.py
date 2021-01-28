@@ -21,9 +21,9 @@ CONTEXT_SETTINGS = dict(max_content_width=120)
 @click.pass_context
 def cli(ctx, read_log):
     ctx.ensure_object(dict)
-    ctx.obj['CONFIG'] = utils.read_configuration('speedtest.data', 'config.json')
-    ctx.obj['PING'] = utils.read_configuration('speedtest.data', 'ping.json')
-    ctx.obj['BANDWIDTH'] = utils.read_configuration('speedtest.data', 'bandwidth.json')
+    ctx.obj['CONFIG'] = utils.read_resource('speedtest.data', 'config.json')
+    ctx.obj['PING'] = utils.read_resource('speedtest.data', 'ping.json')
+    ctx.obj['BANDWIDTH'] = utils.read_resource('speedtest.data', 'bandwidth.json')
     ctx.obj['CONSOLE'] = Console()
 
     if read_log:
@@ -42,19 +42,19 @@ def config(ctx, threads, target, count, size, reset, list):
 
     if threads:
         config['Threads'] = threads
-        utils.write_configuration('speedtest.data', 'config.json', config)
+        utils.write_resource('speedtest.data', 'config.json', config)
 
     if target:
         config['Target'] = target
-        utils.write_configuration('speedtest.data', 'config.json', config)
+        utils.write_resource('speedtest.data', 'config.json', config)
 
     if count:
         config['Count'] = count
-        utils.write_configuration('speedtest.data', 'config.json', config)
+        utils.write_resource('speedtest.data', 'config.json', config)
 
     if size:
         config['Size'] = size
-        utils.write_configuration('speedtest.data', 'config.json', config)
+        utils.write_resource('speedtest.data', 'config.json', config)
 
     if reset:
         utils.reset_configuration('speedtest.data', f"{reset}.json")
@@ -69,7 +69,7 @@ def config(ctx, threads, target, count, size, reset, list):
 @click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping", fg='yellow'))
 @click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping", fg='yellow'))
 @click.option('--size', type=click.INT, help=style("Set the size of the entire package to send", fg='yellow'))
-@click.option('--save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
+@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
 @click.pass_context
 def ping(ctx, target, count, size, save):
     config: dict = ctx.obj['CONFIG']
@@ -90,19 +90,18 @@ def ping(ctx, target, count, size, save):
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Perform standard speedtest.net testing operations.", fg='bright_green'))
 @click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='yellow'))
-@click.option('--upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='yellow'))
-@click.option('--download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='yellow'))
-@click.option('--save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
+@click.option('--upload/--no-upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='yellow'))
+@click.option('--download/--no-download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='yellow'))
+@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
 @click.pass_context
 def bandwidth(ctx, threads, upload, download, save):
-    config: dict = ctx.obj['CONFIG']
     bandwidth: dict = ctx.obj['BANDWIDTH']
     console: Console = ctx.obj['CONSOLE']
     
     with console.status('Running bandwidth test . . .', spinner='dots3') as _:
         results = core.test_bandwidth(threads, upload, download)
 
-    click.secho("\nNetwork Connection Result", fg='bright_magenta')
+    click.secho("\nBandwidth Result", fg='bright_magenta')
     utils.print_dict('Name', 'Value', results)
 
     if save:
@@ -112,5 +111,14 @@ def bandwidth(ctx, threads, upload, download, save):
 @click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='yellow'))
 @click.pass_context
 def plot(ctx, history):
+    config: dict = ctx.obj['CONFIG']
     ping: dict = ctx.obj['PING']
     bandwidth: dict = ctx.obj['BANDWIDTH']
+    console: Console = ctx.obj['CONSOLE']
+    target: str = config.get('Target', 'www.google.com')
+
+    try:
+        with console.status('Plotting data . . .', spinner='dots3') as _:
+            core.plot_history(ping if history=='ping' else bandwidth, target, Test(history))
+    except KeyError:
+        utils.print_on_error(f"No data to plot available. Run 'speedtest {history} --save' to store results to disk.")
