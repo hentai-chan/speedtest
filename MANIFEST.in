@@ -1,6 +1,8 @@
-include CHANGELOG.md
+include *.svg
+include *.md
 include LICENSE
 
-recursive-include src/data *.json
+recursive-include requirements *.txt
+recursive-include src *.json
 
 exclude test.py
