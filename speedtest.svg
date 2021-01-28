@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="500.00003"
+   height="500.00003"
+   viewBox="0 0 132.29167 132.29168"
+   version="1.1"
+   id="svg1231"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="speedtest.svg">
+  <title
+     id="title1373">Python Speedtest Icon</title>
+  <defs
+     id="defs1225">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient1367">
+      <stop
+         style="stop-color:#333333;stop-opacity:1"
+         offset="0"
+         id="stop1363" />
+      <stop
+         style="stop-color:#212121;stop-opacity:0.99215686"
+         offset="1"
+         id="stop1365" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4689"
+       id="linearGradient1478"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.14883897,0,0,0.15027591,195.95044,-35.132852)"
+       x1="26.648937"
+       y1="20.603781"
+       x2="135.66525"
+       y2="114.39767" />
+    <linearGradient
+       id="linearGradient4689">
+      <stop
+         style="stop-color:#979797;stop-opacity:1"
+         offset="0"
+         id="stop4691" />
+      <stop
+         style="stop-color:#646464;stop-opacity:1"
+         offset="1"
+         id="stop4693" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4671"
+       id="linearGradient1475"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.14883897,0,0,0.15027591,195.95044,-35.132852)"
+       x1="150.96111"
+       y1="192.35176"
+       x2="112.03144"
+       y2="137.27299" />
+    <linearGradient
+       id="linearGradient4671">
+      <stop
+         style="stop-color:#9d9d9d;stop-opacity:1"
+         offset="0"
+         id="stop4673" />
+      <stop
+         style="stop-color:#b9b9b9;stop-opacity:1"
+         offset="1"
+         id="stop4675" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1367"
+       id="linearGradient1369"
+       x1="1.25e-05"
+       y1="-232.16669"
+       x2="-132.29166"
+       y2="-99.875023"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-198.43752,198.4375)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="102.50287"
+     inkscape:cy="287.13843"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:document-rotation="0"
+     showguides="false"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1776"
+       spacingx="2.6458333"
+       spacingy="2.6458333"
+       originx="-198.43751"
+       originy="-198.43751" />
+    <sodipodi:guide
+       position="-26.458355,66.145848"
+       orientation="0,-1"
+       id="guide1010" />
+    <sodipodi:guide
+       position="66.145805,-13.229152"
+       orientation="1,0"
+       id="guide1012" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1228">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Python Speedtest Icon</dc:title>
+        <dc:date>2021/01/28</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>hentai-chan</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>hentai-chan</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <cc:license
+           rdf:resource="http://www.gnu.org/licenses/gpl-3.0.html" />
+        <dc:source>https://github.com/hentai-chan/speedtest</dc:source>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-198.43752,33.729172)">
+    <rect
+       style="fill:url(#linearGradient1369);fill-opacity:1;stroke-width:0.62363"
+       id="rect998"
+       width="132.29167"
+       height="132.29167"
+       x="-330.72919"
+       y="-33.729172"
+       rx="26.458357"
+       ry="26.458332"
+       transform="scale(-1,1)" />
+    <path
+       style="fill:url(#linearGradient1478);fill-opacity:1;stroke-width:0.82396"
+       d="m 264.03796,-13.884661 c -3.77676,0.01868 -7.38345,0.339663 -10.55699,0.901213 -9.34884,1.651638 -11.04622,5.1086309 -11.04622,11.4839558 v 8.4198485 h 22.09245 v 2.8066266 h -22.09245 -8.29111 c -6.4207,0 -12.04283,3.8591891 -13.80135,11.2007211 -2.02845,8.415083 -2.11842,13.666219 0,22.452919 1.57039,6.540501 5.32074,11.20072 11.74144,11.20072 h 7.5959 V 44.487839 c 0,-7.291984 6.30918,-13.724112 13.80134,-13.724112 h 22.0667 c 6.14257,0 11.04623,-5.057589 11.04623,-11.226475 V -1.4994922 c 0,-5.9871731 -5.05087,-10.4847078 -11.04623,-11.4839558 -3.79516,-0.631743 -7.73295,-0.918746 -11.50971,-0.901213 z m -11.94744,6.7719468 c 2.28201,0 4.14557,1.893984 4.14557,4.2228014 0,2.32053372 -1.86356,4.1970471 -4.14557,4.1970471 -2.29017,0 -4.14554,-1.87651338 -4.14554,-4.1970471 0,-2.3288174 1.85537,-4.2228014 4.14554,-4.2228014 z"
+       id="path1948" />
+    <path
+       style="fill:url(#linearGradient1475);fill-opacity:1;stroke-width:0.82396"
+       d="m 289.34901,9.7269829 v 9.8102691 c 0,7.605801 -6.44822,14.007347 -13.80134,14.007347 h -22.0667 c -6.04444,0 -11.04622,5.173219 -11.04622,11.226475 v 21.036745 c 0,5.987204 5.20626,9.508785 11.04622,11.226475 6.99321,2.056295 13.69936,2.42791 22.0667,0 5.56187,-1.610345 11.04623,-4.851151 11.04623,-11.226475 V 57.38797 h -22.0667 v -2.806627 h 22.0667 11.04622 c 6.4207,0 8.8133,-4.478538 11.04623,-11.20072 2.30652,-6.920338 2.20839,-13.575379 0,-22.452919 -1.58677,-6.39183 -4.61737,-11.2007211 -11.04623,-11.2007211 z M 276.93809,63.001223 c 2.2902,0 4.14557,1.876482 4.14557,4.197047 0,2.328787 -1.85537,4.222802 -4.14557,4.222802 -2.28198,0 -4.14554,-1.894015 -4.14554,-4.222802 0,-2.320565 1.86356,-4.197047 4.14554,-4.197047 z"
+       id="path1950" />
+    <path
+       id="circle1002"
+       style="fill:#e0e0e0;fill-opacity:0.992157;stroke-width:4.09092"
+       d="M 999.74805,775 A 225,225 0 0 0 775,1000 a 225,225 0 0 0 225,225 225,225 0 0 0 225,-225 225,225 0 0 0 -225,-225 225,225 0 0 0 -0.25195,0 z M 1000,805 a 195,195 0 0 1 195,195 195,195 0 0 1 -195,195 195,195 0 0 1 -195,-195 195,195 0 0 1 195,-195 z"
+       transform="matrix(0.26458333,0,0,0.26458333,0,-232.16667)" />
+  </g>
+</svg>
