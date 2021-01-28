@@ -79,14 +79,17 @@ def ping(ctx, target, count, size, save):
     count: int = count or config.get('Count', 4)
     size: int = size or config.get('Size', 1)
 
-    with console.status('Running bandwidth test . . .', spinner='dots3') as _:
-        results = core.test_ping(target, count, size)
+    try:
+        with console.status('Running bandwidth test . . .', spinner='dots3') as _:        
+            results = core.test_ping(target, count, size)
 
-    click.secho(f"\nPing Result", fg='bright_magenta')
-    utils.print_dict('Name', 'Value', results)
+        click.secho(f"\nPing Results", fg='bright_magenta')
+        utils.print_dict('Name', 'Value', results)
 
-    if save:
-        core.save(ping, results, Test.Ping)
+        if save:
+            core.save(ping, results, Test.Ping)
+    except Exception as exception:
+        utils.logger.critical(f"The application failed to run a ping test: {exception}")
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Perform standard speedtest.net testing operations.", fg='bright_green'))
 @click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='yellow'))
@@ -98,14 +101,17 @@ def bandwidth(ctx, threads, upload, download, save):
     bandwidth: dict = ctx.obj['BANDWIDTH']
     console: Console = ctx.obj['CONSOLE']
     
-    with console.status('Running bandwidth test . . .', spinner='dots3') as _:
-        results = core.test_bandwidth(threads, upload, download)
+    try:
+        with console.status('Running bandwidth test . . .', spinner='dots3') as _:
+            results = core.test_bandwidth(threads, upload, download)
 
-    click.secho("\nBandwidth Result", fg='bright_magenta')
-    utils.print_dict('Name', 'Value', results)
+        click.secho("\nBandwidth Results", fg='bright_magenta')
+        utils.print_dict('Name', 'Value', results)
 
-    if save:
-        core.save(bandwidth, results, Test.Bandwidth)
+        if save:
+            core.save(bandwidth, results, Test.Bandwidth)
+    except Exception as exception:
+        utils.logger.critical(f"The application failed to run a bandwidth test: {exception}")
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Plot internet or ping history.", fg='bright_green'))
 @click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='yellow'))
@@ -121,4 +127,7 @@ def plot(ctx, history):
         with console.status('Plotting data . . .', spinner='dots3') as _:
             core.plot_history(ping if history=='ping' else bandwidth, target, Test(history))
     except KeyError:
+        utils.logger.warning(f"Attempted plot invocation with history={history}")
         utils.print_on_error(f"No data to plot available. Run 'speedtest {history} --save' to store results to disk.")
+    except Exception as exception:
+        utils.logger.critical(f"Something went wrong while trying to plot the history for {history}: {exception}")
