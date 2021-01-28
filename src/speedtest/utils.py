@@ -15,9 +15,9 @@ from .__init__ import package_name
 
 #region i/o operations
 
-def log_file_path(target_dir=package_name) -> Path:
+def log_file_path(target_dir) -> Path:
     """
-    Make a `package_name` folder in the user's home directory, create a log
+    Make a `target_dir` folder in the user's home directory, create a log
     file (if there is none, else use the existsing one) and return its path.
     """
     directory = Path.home().joinpath(target_dir)
@@ -27,11 +27,34 @@ def log_file_path(target_dir=package_name) -> Path:
     return log_file
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('[%(asctime)s]::[%(levelname)s]::[%(name)s] - %(message)s')
-file_handler = logging.FileHandler(log_file_path())
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s::%(levelname)s::%(name)s::%(message)s', datefmt='%d-%m-%y %H:%M:%S')
+file_handler = logging.FileHandler(log_file_path(target_dir=package_name))
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
+
+def read_log() -> None:
+    """
+    Read color-formatted log file content from the speedtest module.
+    """
+    color_map = {
+        'NOTSET': 'white',
+        'DEBUG': 'bright_blue',
+        'INFO': 'yellow',
+        'WARNING': 'bright_magenta',
+        'ERROR': 'red',
+        'CRITICAL': 'bright_red'
+    }
+    click.secho("\nLOG FILE CONTENT\n", fg='bright_magenta')
+    with open(log_file_path(target_dir=package_name), mode='r', encoding='utf-8') as file_handler:
+        log = file_handler.readlines()
+        for line in log:
+            entry = line.strip('\n').split('::')
+            timestamp, levelname, name, message = entry[0], entry[1], entry[2], entry[3]
+            click.secho(f"[{timestamp}] ", fg='cyan', nl=False)
+            click.secho(f"@{name} ", nl=False)
+            click.secho(f"{levelname}\t", fg=color_map[levelname], blink=(levelname=='CRITICAL'), nl=False)
+            click.secho(message)
 
 def read_configuration(resource: str, package: str) -> dict:
     """
