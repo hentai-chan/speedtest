@@ -45,9 +45,15 @@ def read_log() -> None:
         'ERROR': 'red',
         'CRITICAL': 'bright_red'
     }
-    click.secho("\nLOG FILE CONTENT\n", fg='bright_magenta')
     with open(log_file_path(target_dir=package_name), mode='r', encoding='utf-8') as file_handler:
         log = file_handler.readlines()
+
+        if not log:
+            print_on_warning("Operation suspended: log file is empty.")
+            return
+
+        click.secho("\nLOG FILE CONTENT\n", fg='bright_magenta')
+
         for line in log:
             entry = line.strip('\n').split('::')
             timestamp, levelname, name, message = entry[0], entry[1], entry[2], entry[3]
