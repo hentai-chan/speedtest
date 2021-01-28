@@ -113,7 +113,7 @@ def bandwidth(ctx, threads, upload, download, save):
     except Exception as exception:
         utils.logger.critical(f"The application failed to run a bandwidth test: {exception}")
 
-@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Plot internet or ping history.", fg='bright_green'))
+@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Plot bandwidth or ping history.", fg='bright_green'))
 @click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='yellow'))
 @click.pass_context
 def plot(ctx, history):
@@ -122,6 +122,10 @@ def plot(ctx, history):
     bandwidth: dict = ctx.obj['BANDWIDTH']
     console: Console = ctx.obj['CONSOLE']
     target: str = config.get('Target', 'www.google.com')
+
+    if not history:
+        utils.print_on_warning("You need to specify an plot option. Run 'speedtest plot --help' to view this command's help page.")
+        return
 
     try:
         with console.status('Plotting data . . .', spinner='dots3') as _:
