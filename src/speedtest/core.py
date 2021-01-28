@@ -4,6 +4,8 @@ from datetime import datetime as dt
 from datetime import timezone
 from enum import Enum, unique
 
+import matplotlib.pyplot as plt
+import pandas as pd
 from pythonping import ping
 
 from . import utils
@@ -22,8 +24,7 @@ def test_ping(target: str, count: int, size: int) -> dict:
     now = dt.now(tz=timezone.utc)
     ping_result = ping(target=target, count=count, size=size)
     return {
-        'Date': now.strftime('%Y-%m-%d'),
-        'Time': now.strftime('%X'),
+        'DateTime': now.strftime('%Y-%m-%d %H:%M:%S'),
         'Ping Target': target,
         'Min. Ping': "{:6.2F}ms".format(ping_result.rtt_min_ms),
         'Max. Ping': "{:6.2F}ms".format(ping_result.rtt_max_ms),
@@ -45,8 +46,7 @@ def test_bandwidth(threads: int, upload: bool, download: bool) -> dict:
     result = test.results.dict()
     return {
         'Country': result['client']['country'],
-        'Date': now.strftime('%Y-%m-%d'),
-        'Time': now.strftime('%X'),
+        'DateTime': now.strftime('%Y-%m-%d %H:%M:%S'),
         'ISP': result['client']['isp'],
         'IP': result['client']['ip'],
         'Download': "{:6.2F}MB/s".format(int(result['download']) / 1_000_000),
@@ -62,4 +62,39 @@ def save(storage: dict, results: dict, test_: Test) -> None:
     sanitize = lambda key, value: value.strip(' ').strip('%msMB/s') if key not in blacklist else value.strip(' ')
     tmp.append({key: sanitize(key, value) for key, value in results.items()})
     storage['Results'] = tmp
-    utils.write_configuration('speedtest.data', "ping.json", storage)
+    utils.write_resource('speedtest.data', f"{test_.value}.json", storage)
+
+def plot_history(history: dict, ping_target: str, test_: Test) -> None:
+    """
+    Create a line plot by using the stored results over the entire time period.
+    """
+    data_frame = pd.DataFrame(history['Results'])
+    format_datetime = lambda df: [dt.strptime(iso_dt_string, '%Y-%m-%d %H:%M:%S') for iso_dt_string in df['DateTime']]
+    if test_ is Test.Ping:
+        data_frame = data_frame[data_frame['Ping Target'] == ping_target]
+        data_frame['DateTime'] = format_datetime(data_frame)
+        data_frame['Min. Ping'] = list(map(float, data_frame['Min. Ping']))
+        data_frame['Max. Ping'] = list(map(float, data_frame['Max. Ping']))
+        axis = plt.gca()
+        axis.set_xlabel('DateTime')
+        axis.set_ylabel('ms')
+        axis.set_title('Ping History')
+        data_frame.plot(kind='line', x='DateTime', y='Min. Ping', color='blue', ax=axis, grid=True)
+        data_frame.plot(kind='line', x='DateTime', y='Max. Ping', color='red', ax=axis, grid=True)
+        plt.ylim(ymin=0, ymax=max(data_frame['Max. Ping'])+10)
+        plt.legend(['Min. Ping', 'Max. Ping'])
+    else:
+        data_frame['DateTime'] = format_datetime(data_frame)
+        data_frame['Download'] = list(map(float, data_frame['Download']))
+        data_frame['Upload'] = list(map(float, data_frame['Upload']))
+        axis = plt.gca()
+        axis.set_xlabel('DateTime')
+        axis.set_ylabel('MB/s')
+        axis.set_title('Upload & Download History')
+        data_frame.plot(kind='line', x='DateTime', y='Download', color='blue', ax=axis, grid=True)
+        data_frame.plot(kind='line', x='DateTime', y='Upload', color='red', ax=axis, grid=True)
+        plt.ylim(ymin=0, ymax=max(data_frame['Download'])+10)
+        plt.legend(['Upload', 'Download'])
+    plt.margins(0, 0)
+    plt.xticks(rotation=45)
+    plt.show()
