@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://github.com/hentai-chan/speedtest" title="Release Version">
-        <img src="https://img.shields.io/badge/Release-0.0.1%20-blue">
+        <img src="https://img.shields.io/badge/Release-1.0.0%20-blue">
     </a>
     <a title="Supported Python Versions">
         <img src="https://img.shields.io/badge/Python-3.8%20-blue">
@@ -30,7 +30,7 @@ network connectivity. It implements an alternative command line interface to
 <details>
 <summary>Installation</summary>
 
-```bash
+```cli
 git clone https://github.com/hentai-chan/speedtest.git
 python -m venv venv/
 source venv/bin/activate
@@ -46,7 +46,20 @@ speedtest --version
 <details>
 <summary>Customize Application Settings</summary>
 
-coming soon!
+**Optional**: Set default settings for `ping` and `bandwidth` tests. Run
+
+```cli
+speedtest config --help
+```
+
+to discover all available customizations.
+
+**Example**: Set how many times to attempt the ping:
+
+```cli
+# defaults to 4
+speedtest config --count=8
+```
 
 </details>
 
@@ -55,6 +68,38 @@ coming soon!
 <details>
 <summary>Command Line Usage</summary>
 
-coming soon!
+Execute ping test 100 times using `bing` as target and store the results to disk:
+
+```cli
+speedtest ping --count=100 --target=www.bing.com --save
+```
+
+View help page for `bandwidth`:
+
+```cli
+speedtest bandwidth --help
+```
+
+Plot previous bandwidth tests:
+
+```cli
+speedtest plot --history=bandwidth
+```
+
+Reset your application history:
+
+```cli
+speedtest config --reset=bandwidth
+```
 
 </details>
+
+## Report an Issue
+
+Did something went wrong? Copy and paste the information from
+
+```cli
+speedtest --read-log
+```
+
+to file a new bug report.
