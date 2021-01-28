@@ -56,7 +56,7 @@ def read_log() -> None:
             click.secho(f"{levelname}\t", fg=color_map[levelname], blink=(levelname=='CRITICAL'), nl=False)
             click.secho(message)
 
-def read_configuration(resource: str, package: str) -> dict:
+def read_resource(resource: str, package: str) -> dict:
     """
     Return the content of `package` (a JSON file located in `resource`) as dictionary.
     """
@@ -64,12 +64,12 @@ def read_configuration(resource: str, package: str) -> dict:
         with open(resource_handler, mode='r', encoding='utf-8') as file_handler:
             return json.load(file_handler)
 
-def write_configuration(resource: str, package: str, params: dict) -> None:
+def write_resource(resource: str, package: str, params: dict) -> None:
     """
     Merge `params` with the content of `package` (located in `resource`) and write
     the result of this operation to disk.
     """
-    config = read_configuration(resource, package)
+    config = read_resource(resource, package)
     with resource_path(resource, package) as resource_handler:
         with open(resource_handler, mode='w', encoding='utf-8') as file_handler:
             json.dump({**config, **params}, file_handler)
