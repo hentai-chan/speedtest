@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 1.0.1 (30 January 2021)
+
+Log-related operations are promoted to autonomous methods, see also
+
+```cli
+speedtest log --help
+```
+
+for more information.
+
 ## Version 1.0.0 (28 January 2021)
 
 This is the first stable release intended for public use. In comparison to the
