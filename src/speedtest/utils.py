@@ -77,16 +77,16 @@ def read_resource(package: str, resource: str) -> dict:
     with open(get_resource_path(package, resource), mode='r', encoding='utf-8') as file_handler:
         return json.load(file_handler)
 
-def write_resource(resource: str, package: str, params: dict) -> None:
+def write_resource(package: str, resource: str, params: dict) -> None:
     """
     Merge `params` with the content of `package` (located in `resource`) and write
     the result of this operation to disk.
     """
-    config = read_resource(resource, package)
+    config = read_resource(package, resource)
     with open(get_resource_path(package, resource), mode='w', encoding='utf-8') as file_handler:
         json.dump({**config, **params}, file_handler)
 
-def reset_resource(resource: str, package: str) -> None:
+def reset_resource(package: str, resource: str) -> None:
     """
     Reset the content of `package` (a JSON file located in `resource`).
     """
