@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.0.2 (01 January 2021)
+
+Fixed a bug that made accessing the resource files impossible.
+
 ## Version 1.0.1 (30 January 2021)
 
 Log-related operations are promoted to autonomous methods, see also
