@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from pprint import pprint
+
 import click
 from click import style
 from rich.console import Console
@@ -82,15 +84,25 @@ def config(ctx, threads, target, count, size, reset, list):
 @click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='yellow'))
 @click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='yellow'))
 @click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='yellow'))
+@click.option('--reset', is_flag=True, help=style("Wipe out your ping save file.", fg='yellow'))
+@click.option('--read', is_flag=True, default=False, help=style("Read your ping save file.", fg='yellow'))
 @click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
 @click.pass_context
-def ping(ctx, target, count, size, save):
+def ping(ctx, target, count, size, reset, read, save):
     config: dict = ctx.obj['CONFIG']
     ping: dict = ctx.obj['PING']
     console: Console = ctx.obj['CONSOLE']
     target: str = target or config.get('Target', 'www.google.com')
     count: int = count or config.get('Count', 4)
     size: int = size or config.get('Size', 1)
+
+    if reset:
+        utils.reset_resource('speedtest.data', 'ping.json')
+        return
+
+    if read:
+        pprint(ping, indent=2)
+        return
 
     try:
         with console.status('Running bandwidth test . . .', spinner='dots3') as _:        
@@ -108,11 +120,21 @@ def ping(ctx, target, count, size, save):
 @click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='yellow'))
 @click.option('--upload/--no-upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='yellow'))
 @click.option('--download/--no-download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='yellow'))
+@click.option('--reset', is_flag=True, help=style("Wipe out your bandwidth save file.", fg='yellow'))
+@click.option('--read', is_flag=True, default=False, help=style("Read your bandwidth save file.", fg='yellow'))
 @click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
 @click.pass_context
-def bandwidth(ctx, threads, upload, download, save):
+def bandwidth(ctx, threads, upload, download, reset, read, save):
     bandwidth: dict = ctx.obj['BANDWIDTH']
     console: Console = ctx.obj['CONSOLE']
+
+    if reset:
+        utils.reset_resource('speedtest.data', 'bandwidth.json')
+        return
+
+    if read:
+        pprint(bandwidth, indent=2)
+        return
     
     try:
         with console.status('Running bandwidth test . . .', spinner='dots3') as _:
