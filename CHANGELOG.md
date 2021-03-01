@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 1.0.4 - Improve Log Utilities (01 March 2021)
+
+Makes the `speedtest log --read` terminal output prettier using `rich` tables
+and fixes potential permission errors with respect to the log path for non-root
+users.
+
 ## Version 1.0.3 - Reset and Read Options (03 January 2021)
 
 Adds two new flags to `ping` and `bandwidth` command, namely `--read` and `--reset`.
