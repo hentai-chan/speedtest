@@ -18,7 +18,7 @@ from .core import Test
 CONTEXT_SETTINGS = dict(max_content_width=120)
 
 @click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS, help=style("Speedtest is a handy terminal application for assessing the performance of your network connectivity. It implements an alternative command line interface to Matt Martz' library.", fg='bright_magenta'))
-@click.version_option(version=__version__, prog_name=package_name, help=style("Show the version and exit.", fg='yellow'))
+@click.version_option(version=__version__, prog_name=package_name, help=style("Show the version and exit.", fg='bright_yellow'))
 @click.pass_context
 def cli(ctx):
     ctx.ensure_object(dict)
@@ -28,9 +28,9 @@ def cli(ctx):
     ctx.obj['CONSOLE'] = Console()
 
 @cli.command(help=style("Perform log file operations.", fg='bright_green'), context_settings=CONTEXT_SETTINGS)
-@click.option('--read', is_flag=True, default=False, help=style("Read the log file.", fg='yellow'))
-@click.option('--reset', is_flag=True, default=False, help=style("Reset all log file entries", fg='yellow'))
-@click.option('--path', is_flag=True, default=False, help=style("Get the log file path.", fg='yellow'))
+@click.option('--read', is_flag=True, default=False, help=style("Read the log file.", fg='bright_yellow'))
+@click.option('--reset', is_flag=True, default=False, help=style("Reset all log file entries", fg='bright_yellow'))
+@click.option('--path', is_flag=True, default=False, help=style("Get the log file path.", fg='bright_yellow'))
 def log(read, reset, path):
     if read:
         utils.read_log()
@@ -45,12 +45,12 @@ def log(read, reset, path):
         return
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Configure default application settings.", fg='bright_green'))
-@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='yellow'))
-@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='yellow'))
-@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='yellow'))
-@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='yellow'))
-@click.option('--reset', type=click.Choice(['config', 'ping', 'bandwidth'], case_sensitive=False), help=style("Reset all configuration or speedtest entries.", fg='yellow'))
-@click.option('--list', is_flag=True, help=style("List all app settings.", fg='yellow'))
+@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='bright_yellow'))
+@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='bright_yellow'))
+@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='bright_yellow'))
+@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='bright_yellow'))
+@click.option('--reset', type=click.Choice(['config', 'ping', 'bandwidth'], case_sensitive=False), help=style("Reset all configuration or speedtest entries.", fg='bright_yellow'))
+@click.option('--list', is_flag=True, help=style("List all app settings.", fg='bright_yellow'))
 @click.pass_context
 def config(ctx, threads, target, count, size, reset, list):
     config: dict = ctx.obj['CONFIG']
@@ -81,12 +81,12 @@ def config(ctx, threads, target, count, size, reset, list):
         return
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Ping a remote host and get the response data.", fg='bright_green'))
-@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='yellow'))
-@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='yellow'))
-@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='yellow'))
-@click.option('--reset', is_flag=True, help=style("Wipe out your ping save file.", fg='yellow'))
-@click.option('--read', is_flag=True, default=False, help=style("Read your ping save file.", fg='yellow'))
-@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
+@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='bright_yellow'))
+@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='bright_yellow'))
+@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='bright_yellow'))
+@click.option('--reset', is_flag=True, help=style("Wipe out your ping save file.", fg='bright_yellow'))
+@click.option('--read', is_flag=True, default=False, help=style("Read your ping save file.", fg='bright_yellow'))
+@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='bright_yellow'))
 @click.pass_context
 def ping(ctx, target, count, size, reset, read, save):
     config: dict = ctx.obj['CONFIG']
@@ -117,12 +117,12 @@ def ping(ctx, target, count, size, reset, read, save):
         utils.logger.critical(f"The application failed to run a ping test: {exception}")
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Perform standard speedtest.net testing operations.", fg='bright_green'))
-@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='yellow'))
-@click.option('--upload/--no-upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='yellow'))
-@click.option('--download/--no-download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='yellow'))
-@click.option('--reset', is_flag=True, help=style("Wipe out your bandwidth save file.", fg='yellow'))
-@click.option('--read', is_flag=True, default=False, help=style("Read your bandwidth save file.", fg='yellow'))
-@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='yellow'))
+@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='bright_yellow'))
+@click.option('--upload/--no-upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='bright_yellow'))
+@click.option('--download/--no-download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='bright_yellow'))
+@click.option('--reset', is_flag=True, help=style("Wipe out your bandwidth save file.", fg='bright_yellow'))
+@click.option('--read', is_flag=True, default=False, help=style("Read your bandwidth save file.", fg='bright_yellow'))
+@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='bright_yellow'))
 @click.pass_context
 def bandwidth(ctx, threads, upload, download, reset, read, save):
     bandwidth: dict = ctx.obj['BANDWIDTH']
@@ -149,7 +149,7 @@ def bandwidth(ctx, threads, upload, download, reset, read, save):
         utils.logger.critical(f"The application failed to run a bandwidth test: {exception}")
 
 @cli.command(context_settings=CONTEXT_SETTINGS, help=style("Plot bandwidth or ping history.", fg='bright_green'))
-@click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='yellow'))
+@click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='bright_yellow'))
 @click.pass_context
 def plot(ctx, history):
     config: dict = ctx.obj['CONFIG']
