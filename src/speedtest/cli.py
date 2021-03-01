@@ -25,7 +25,6 @@ def cli(ctx):
     ctx.obj['CONFIG'] = utils.read_resource('speedtest.data', 'config.json')
     ctx.obj['PING'] = utils.read_resource('speedtest.data', 'ping.json')
     ctx.obj['BANDWIDTH'] = utils.read_resource('speedtest.data', 'bandwidth.json')
-    ctx.obj['CONSOLE'] = Console()
 
 @cli.command(help=style("Perform log file operations.", fg='bright_green'), context_settings=CONTEXT_SETTINGS)
 @click.option('--read', is_flag=True, default=False, help=style("Read the log file.", fg='bright_yellow'))
@@ -91,7 +90,6 @@ def config(ctx, threads, target, count, size, reset, list):
 def ping(ctx, target, count, size, reset, read, save):
     config: dict = ctx.obj['CONFIG']
     ping: dict = ctx.obj['PING']
-    console: Console = ctx.obj['CONSOLE']
     target: str = target or config.get('Target', 'www.google.com')
     count: int = count or config.get('Count', 4)
     size: int = size or config.get('Size', 1)
@@ -105,7 +103,7 @@ def ping(ctx, target, count, size, reset, read, save):
         return
 
     try:
-        with console.status('Running bandwidth test . . .', spinner='dots3') as _:        
+        with utils.CONSOLE.status('Running bandwidth test . . .', spinner='dots3') as _:        
             results = core.test_ping(target, count, size)
 
         click.secho(f"\nPing Results", fg='bright_magenta')
@@ -126,7 +124,6 @@ def ping(ctx, target, count, size, reset, read, save):
 @click.pass_context
 def bandwidth(ctx, threads, upload, download, reset, read, save):
     bandwidth: dict = ctx.obj['BANDWIDTH']
-    console: Console = ctx.obj['CONSOLE']
 
     if reset:
         utils.reset_resource('speedtest.data', 'bandwidth.json')
@@ -137,7 +134,7 @@ def bandwidth(ctx, threads, upload, download, reset, read, save):
         return
     
     try:
-        with console.status('Running bandwidth test . . .', spinner='dots3') as _:
+        with utils.CONSOLE.status('Running bandwidth test . . .', spinner='dots3') as _:
             results = core.test_bandwidth(threads, upload, download)
 
         click.secho("\nBandwidth Results", fg='bright_magenta')
@@ -155,7 +152,6 @@ def plot(ctx, history):
     config: dict = ctx.obj['CONFIG']
     ping: dict = ctx.obj['PING']
     bandwidth: dict = ctx.obj['BANDWIDTH']
-    console: Console = ctx.obj['CONSOLE']
     target: str = config.get('Target', 'www.google.com')
 
     if not history:
@@ -163,7 +159,7 @@ def plot(ctx, history):
         return
 
     try:
-        with console.status('Plotting data . . .', spinner='dots3') as _:
+        with utils.CONSOLE.status('Plotting data . . .', spinner='dots3') as _:
             core.plot_history(ping if history=='ping' else bandwidth, target, Test(history))
     except KeyError:
         utils.logger.warning(f"Attempted plot invocation with history={history}")
