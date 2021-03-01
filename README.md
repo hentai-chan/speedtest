@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://github.com/hentai-chan/speedtest" title="Release Version">
-        <img src="https://img.shields.io/badge/Release-1.0.3%20-blue">
+        <img src="https://img.shields.io/badge/Release-1.0.4%20-blue">
     </a>
     <a title="Supported Python Versions">
         <img src="https://img.shields.io/badge/Python-3.8%20-blue">
@@ -16,7 +16,7 @@
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" title="License Information" target="_blank" rel="noopener noreferrer">
         <img src="https://img.shields.io/badge/License-GPLv3-blue.svg">
     </a>
-    <a href="https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/hentai-chan/speedtest" title="Software Heritage Archive" target="_blank" rel="noopener noreferrer">
+    <a href="https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/hentai-chan/speedtest.git" title="Software Heritage Archive" target="_blank" rel="noopener noreferrer">
         <img src="https://archive.softwareheritage.org/badge/origin/https://github.com/hentai-chan/speedtest.git/">
     </a>
 </p>
