@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://github.com/hentai-chan/speedtest" title="Release Version">
-        <img src="https://img.shields.io/badge/Release-1.0.4%20-blue">
+        <img src="https://img.shields.io/badge/Release-1.0.5%20-blue">
     </a>
     <a title="Supported Python Versions">
         <img src="https://img.shields.io/badge/Python-3.8%20-blue">
