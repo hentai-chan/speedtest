@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.0.5 - Speedtest Patch (29 May 2021)
+
+Fixes internal `speedtest` error that prematurely aborted the `bandwidth` command.
+
 ## Version 1.0.4 - Improve Log Utilities (01 March 2021)
 
 Makes the `speedtest log --read` terminal output prettier using `rich` tables
