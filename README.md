@@ -30,13 +30,21 @@ network connectivity. It implements an alternative command line interface to
 <details>
 <summary>Installation</summary>
 
+[pipx](https://pypa.github.io/pipx/) is the recommended way to install
+Python applications in an isolated environment:
+
+```cli
+pipx install git+https://github.com/hentai-chan/speedtest.git
+```
+
+Fire up a debug build in `./venv`:
+
 ```cli
 git clone https://github.com/hentai-chan/speedtest.git
+cd ./speedtest
 python -m venv venv/
 source venv/bin/activate
 pip install -e .
-# test this script
-speedtest --version
 ```
 
 </details>
