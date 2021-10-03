@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://github.com/hentai-chan/speedtest" title="Release Version">
-        <img src="https://img.shields.io/badge/Release-1.0.5%20-blue">
+        <img src="https://img.shields.io/badge/Release-2.0.0%20-blue">
     </a>
     <a title="Supported Python Versions">
         <img src="https://img.shields.io/badge/Python-3.8%20-blue">
@@ -54,7 +54,7 @@ pip install -e .
 <details>
 <summary>Customize Application Settings</summary>
 
-**Optional**: Set default settings for `ping` and `bandwidth` tests. Run
+**Optional**: Overwrite the default settings for `ping` and `bandwidth` tests.
 
 ```cli
 speedtest config --help
@@ -62,11 +62,16 @@ speedtest config --help
 
 to discover all available customizations.
 
-**Example**: Set how many times to attempt the ping:
+Ping the target 8 times in a row.
 
 ```cli
-# defaults to 4
-speedtest config --count=8
+speedtest config --count 8
+```
+
+List all application settings.
+
+```cli
+speedtest config --list
 ```
 
 </details>
@@ -76,28 +81,37 @@ speedtest config --count=8
 <details>
 <summary>Command Line Usage</summary>
 
-Execute ping test 100 times using `bing` as target and store the results to disk:
+**[Note: You need root privileges in order to use `pythonping`.](https://github.com/alessandromaggio/pythonping#do-i-need-privileged-mode-or-root)**
+
+Execute ping test 100 times using user-defined target and store the results to disk.
 
 ```cli
-speedtest ping --count=100 --target=www.bing.com --save
+speedtest ping --count 100 --target www.hentai-chan.dev --save
 ```
 
-View help page for `bandwidth`:
+Show the save file path.
+
+```cli
+speedtest ping --path
+```
+
+View the help page for the `bandwidth` command.
 
 ```cli
 speedtest bandwidth --help
 ```
 
-Plot previous bandwidth tests:
+Run a bandwidth test with increased output verbosity and save the result to disk.
+This process may take a while.
 
 ```cli
-speedtest plot --history=bandwidth
+speedtest --verbose bandwidth --save
 ```
 
-Reset your application history:
+Reset your bandwidth history.
 
 ```cli
-speedtest config --reset=bandwidth
+speedtest bandwidth --reset
 ```
 
 </details>
@@ -107,7 +121,7 @@ speedtest config --reset=bandwidth
 Did something went wrong? Copy and paste the information from
 
 ```cli
-speedtest log --read
+speedtest log --list
 ```
 
 to file a new bug report.
