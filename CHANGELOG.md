@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 2.0.0 - Major Rewrite (4 October 2021)
+
+With version 2.0.0 the implementation undergoes a radical change. Many external
+dependencies have been dropped entirely (with the exception of `pythonping` which
+in its newest version now requires root privileges). The plot option was also removed
+from this application. You may plot this data yourself with a program of your
+choice using the CSV save files which you can find here:
+
+```cli
+sudo speedtest ping --path
+speedtest bandwidth --path
+```
+
 ## Version 1.0.5 - Speedtest Patch (29 May 2021)
 
 Fixes internal `speedtest` error that prematurely aborted the `bandwidth` command.
