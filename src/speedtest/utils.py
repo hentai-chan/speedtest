@@ -1,148 +1,116 @@
 #!/usr/bin/env python3
 
+import csv
 import json
 import logging
 import os
 import platform
-from collections import namedtuple
-from importlib.resources import path as resource_path
+import sys
 from itertools import chain
+from json.decoder import JSONDecodeError
 from pathlib import Path
-
-import click
-from colorama import Fore, Style
-from rich.console import Console
-from rich.table import Table
+from types import FrameType
+from typing import Dict, Union
 
 from .__init__ import package_name
+from .config import BRIGHT, CYAN, DIM, GREEN, LOGFILE, NORMAL, RED, RESET_ALL, YELLOW
 
-CONSOLE = Console()
+#region logging and resource access
 
-#region i/o operations
-
-def log_file_path(target_dir) -> Path:
+def get_config_dir() -> Path:
     """
-    Make a `target_dir` folder in the user's home directory, create a log
-    file (if there is none, else use the existsing one) and return its path.
+    Return a platform-specific root directory for user configuration settings.
     """
-    directory = Path(os.path.expandvars('%LOCALAPPDATA%')) if platform.system() == 'Windows' else Path().home()
-    directory = directory.joinpath(f".{target_dir}")
-    directory.mkdir(parents=True, exist_ok=True)
-    directory.mkdir(parents=True, exist_ok=True)
-    log_file = directory.joinpath(f"{target_dir}.log")
-    log_file.touch(exist_ok=True)
-    return log_file
+    home = Path('/home').joinpath(os.getenv("SUDO_USER")) if '/root' == os.path.expanduser('~') else Path.home()
+    return {
+        'Windows': Path(os.path.expandvars('%LOCALAPPDATA%')),
+        'Darwin': home.joinpath('Library').joinpath('Application Support'),
+        'Linux': home.joinpath('.config')
+    }[platform.system()].joinpath(package_name)
 
-LOGFILEPATH = log_file_path(target_dir=package_name)
+def get_resource_path(filename: Union[str, Path]) -> Path:
+    """
+    Return a platform-specific log file path.
+    """
+    config_dir = get_config_dir()
+    config_dir.mkdir(parents=True, exist_ok=True)
+    resource = config_dir.joinpath(filename)
+    resource.touch(exist_ok=True)
+    return resource
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s::%(levelname)s::%(lineno)d::%(name)s::%(message)s', datefmt='%d-%b-%y %H:%M:%S')
-file_handler = logging.FileHandler(LOGFILEPATH)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s::%(levelname)s::%(lineno)d::%(name)s::%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+file_handler = logging.FileHandler(get_resource_path(LOGFILE))
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-def read_log() -> None:
+def read_json_file(filename: Union[str, Path]) -> Dict:
     """
-    Read color-formatted log file content from the speedtest module.
+    Read `filename` and, if this file is empty, return an empty dictionary in its place.
     """
-    color_map = {
-        'NOTSET': 'white',
-        'DEBUG': 'bright_blue',
-        'INFO': 'yellow',
-        'WARNING': 'bright_magenta',
-        'ERROR': 'red',
-        'CRITICAL': 'bright_red'
-    }
-    with open(LOGFILEPATH, mode='r', encoding='utf-8') as file_handler:
-        log = file_handler.readlines()
+    with open(get_resource_path(filename), mode='r', encoding='utf-8') as file_handler:
+        try:
+            return json.load(file_handler)
+        except JSONDecodeError:
+            return dict()
 
-        if not log:
-            print_on_warning("Operation suspended: log file is empty.")
-            return
-
-        table = Table(title="Log File Content")
-        table.add_column('Timestamp', style='cyan')
-        table.add_column('Level Name')
-        table.add_column('File Name')
-        table.add_column('Line Number')
-        table.add_column('Message', style='green')
-
-        parse = lambda line: line.strip('\n').split('::')
-        Entry = namedtuple('Entry', 'timestamp levelname lineno name message')
-        
-        for entry in [Entry(parse(line)[0], parse(line)[1], parse(line)[2], parse(line)[3], parse(line)[4]) for line in log]:
-            table.add_row(entry.timestamp, f"[bold {color_map[entry.levelname]}]{entry.levelname}", entry.name, entry.lineno, entry.message)
-        
-        CONSOLE.print(table)
-
-def get_resource_path(package: str, resource: str) -> Path:
+def write_json_file(filename: Union[str, Path], params: dict) -> None:
     """
-    Get the path to a `resource` located in `package`.
+    Save the data in `params` as a JSON file by creating an union of pre-existing data (if any).
     """
-    with resource_path(package, resource) as resource_handler:
-        return Path(resource_handler)
+    config = read_json_file(filename)
+    with open(get_resource_path(filename), mode='w', encoding='utf-8') as file_handler:
+        json.dump({**config, **params}, file_handler, indent=4)
+        file_handler.write('\n')
 
-def read_resource(package: str, resource: str) -> dict:
-    """
-    Return the content of `package` (a JSON file located in `resource`) as dictionary.
-    """
-    with open(get_resource_path(package, resource), mode='r', encoding='utf-8') as file_handler:
-        return json.load(file_handler)
+def reset_file(filename: Union[str, Path]) -> None:
+    open(get_resource_path(filename), mode='w', encoding='utf-8').close()
 
-def write_resource(package: str, resource: str, params: dict) -> None:
-    """
-    Merge `params` with the content of `package` (located in `resource`) and write
-    the result of this operation to disk.
-    """
-    config = read_resource(package, resource)
-    with open(get_resource_path(package, resource), mode='w', encoding='utf-8') as file_handler:
-        json.dump({**config, **params}, file_handler)
+def write_csv(filename: Union[str, Path], data: Dict[str, str]) -> None:
+    with open(filename, mode='a', encoding='utf-8') as file_handler:
+        writer = csv.DictWriter(file_handler, delimiter=',', lineterminator='\n', fieldnames=data.keys())
+        if os.stat(filename).st_size == 0:
+            writer.writeheader()
+        writer.writerow(data)
 
-def reset_resource(package: str, resource: str) -> None:
-    """
-    Reset the content of `package` (a JSON file located in `resource`).
-    """
-    with open(get_resource_path(package, resource), mode='w', encoding='utf-8') as file_handler:
-        json.dump({}, file_handler)
+#endregion logging and resource access
 
-#endregion
-
-#region terminal formatting
+#region development utilities
 
 def print_dict(title_left: str, title_right: str, table: dict) -> None:
     """
     Print a flat dictionary as table with two column titles.
     """
-    table = {str(key): str(value) for key,value in table.items()}
+    table = {str(key): str(value) for key, value in table.items()}
     invert = lambda x: -x + (1 + len(max(chain(table.keys(), [title_left]), key=len)) // 8)
     tabs = lambda string: invert(len(string) // 8) * '\t'
-    click.secho(f"\n{title_left}{tabs(title_left)}{title_right}", fg='bright_green')
-    click.echo(f"{len(title_left) * '-'}{tabs(title_left)}{len(title_right) * '-'}")
+    print('\n' + BRIGHT + GREEN + title_left + tabs(title_left) + title_right + RESET_ALL)
+    print((len(title_left) * '-') + tabs(title_left) + (len(title_right) * '-'))
     for key, value in table.items():
-            click.echo(f"{key}{tabs(key)}{value}")
-    click.echo()
+        print(key + tabs(key) + value)
+    print()
 
 def print_on_success(message: str, verbose: bool=True) -> None:
     """
-    Print a success message if verbose is enabled.
+    Print a formatted success message if verbose is enabled.
     """
     if verbose:
-        click.secho(f"{Style.BRIGHT}{Fore.GREEN}{'[  OK  ]'.ljust(12, ' ')}{Style.RESET_ALL}{message}")
+        print(BRIGHT + GREEN + "[  OK  ]".ljust(12, ' ') + RESET_ALL + message)
 
 def print_on_warning(message: str, verbose: bool=True) -> None:
     """
     Print a formatted warning message if verbose is enabled.
     """
     if verbose:
-        click.secho(f"{Fore.YELLOW}{'[ WARNING ]'.ljust(12, ' ')}{Style.RESET_ALL}{message}")
+        print(BRIGHT + YELLOW + "[ WARNING ]".ljust(12, ' ') + RESET_ALL + message)
 
 def print_on_error(message: str, verbose: bool=True) -> None:
     """
-    Print an error message if verbose is enabled.
+    Print a formatted error message if verbose is enabled.
     """
     if verbose:
-        click.secho(f"{Style.BRIGHT}{Fore.RED}{'[ ERROR ]'.ljust(12, ' ')}{Style.RESET_ALL}{message}", err=True)
+        print(BRIGHT + RED + "[ ERROR ]".ljust(12, ' ') + RESET_ALL + message, file=sys.stderr)
 
 def clear():
     """
@@ -150,4 +118,4 @@ def clear():
     """
     os.system('cls' if platform.system() == 'Windows' else 'clear')
 
-#endregion
+#endregion development utilities

@@ -1,168 +1,190 @@
 #!/usr/bin/env python3
 
-from pprint import pprint
-
-import click
-from click import style
-from rich.console import Console
-
-try:
-    import pretty_errors
-except ImportError:
-    pass
+import argparse
+import csv
+import errno
+import sys
+from collections import namedtuple
+from time import time
 
 from . import core, utils
 from .__init__ import __version__, package_name
-from .core import Test
+from .config import BANDWIDTHFILE, BRIGHT, CONFIGFILE, GREEN, LOGFILE, MAGENTA, PINGFILE, RESET_ALL, YELLOW
 
-CONTEXT_SETTINGS = dict(max_content_width=120)
 
-@click.group(invoke_without_command=True, context_settings=CONTEXT_SETTINGS, help=style("Speedtest is a handy terminal application for assessing the performance of your network connectivity. It implements an alternative command line interface to Matt Martz' library.", fg='bright_magenta'))
-@click.version_option(version=__version__, prog_name=package_name, help=style("Show the version and exit.", fg='bright_yellow'))
-@click.pass_context
-def cli(ctx):
-    ctx.ensure_object(dict)
-    ctx.obj['CONFIG'] = utils.read_resource('speedtest.data', 'config.json')
-    ctx.obj['PING'] = utils.read_resource('speedtest.data', 'ping.json')
-    ctx.obj['BANDWIDTH'] = utils.read_resource('speedtest.data', 'bandwidth.json')
+def cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version=f"%(prog)s {__version__}")
+    parser.add_argument('--verbose', default=False, action='store_true', help="increase output verbosity")
 
-@cli.command(help=style("Perform log file operations.", fg='bright_green'), context_settings=CONTEXT_SETTINGS)
-@click.option('--read', is_flag=True, default=False, help=style("Read the log file.", fg='bright_yellow'))
-@click.option('--reset', is_flag=True, default=False, help=style("Reset all log file entries", fg='bright_yellow'))
-@click.option('--path', is_flag=True, default=False, help=style("Get the log file path.", fg='bright_yellow'))
-def log(read, reset, path):
-    if read:
-        utils.read_log()
-        return
+    subparser = parser.add_subparsers(dest='command')
 
-    if reset:
-        open(utils.log_file_path(target_dir=package_name), mode='w', encoding='utf-8').close()
-        return
+    log_parser = subparser.add_parser('log', help="interact with the application log")
+    log_parser.add_argument('--path', action='store_true', help="return the log file path")
+    log_parser.add_argument('--reset', action='store_true', help="purge the log file")
+    log_parser.add_argument('--list', action='store_true', help='read the log file')
 
-    if path:
-        click.echo(utils.log_file_path(target_dir=package_name))
-        return
+    config_parser = subparser.add_parser('config', help="configure default application settings")
+    config_parser.add_argument('--target', type=str, nargs='?', help="set the target IP address or hostname to ping")
+    config_parser.add_argument('--count', type=int, nargs='?', help="set the number of attempts")
+    config_parser.add_argument('--size', type=int, nargs='?', help="set package size to send")
+    config_parser.add_argument('--threads', type=int, nargs='?', help="set number of speedtest threads")
+    config_parser.add_argument('--path', action='store_true', help="return the config file path")
+    config_parser.add_argument('--reset', action='store_true', help='purge the config file')
+    config_parser.add_argument('--list', action='store_true', help="list all user configuration")
 
-@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Configure default application settings.", fg='bright_green'))
-@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='bright_yellow'))
-@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='bright_yellow'))
-@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='bright_yellow'))
-@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='bright_yellow'))
-@click.option('--reset', type=click.Choice(['config', 'ping', 'bandwidth'], case_sensitive=False), help=style("Reset all configuration or speedtest entries.", fg='bright_yellow'))
-@click.option('--list', is_flag=True, help=style("List all app settings.", fg='bright_yellow'))
-@click.pass_context
-def config(ctx, threads, target, count, size, reset, list):
-    config: dict = ctx.obj['CONFIG']
+    ping_parser = subparser.add_parser('ping', help="ping a remote host")
+    ping_parser.add_argument('--target', type=str, nargs='?', help="set the target IP address or hostname to ping (default: google.com)")
+    ping_parser.add_argument('--count', type=int, nargs='?', help="set the number of attempts (default: 4)")
+    ping_parser.add_argument('--size', type=int, nargs='?', help="set package size to send (default: 1)")
+    ping_parser.add_argument('--save', default=False, action='store_true', help="save ping results")
+    ping_parser.add_argument('--no-save', dest='save', action='store_false', help="don't save ping results (default)")
+    ping_parser.add_argument('--path', action='store_true', help="return the ping file path")
+    ping_parser.add_argument('--reset', action='store_true', help='purge the ping file')
+    ping_parser.add_argument('--list', action='store_true', help="list ping history")
 
-    if threads:
-        config['Threads'] = threads
-        utils.write_resource('speedtest.data', 'config.json', config)
+    bandwidth_parser = subparser.add_parser('bandwidth', help="perform a speedtest")
+    bandwidth_parser.add_argument('--threads', type=int, nargs='?', help="set number of speedtest threads")
+    bandwidth_parser.add_argument('--save', default=False, action='store_true', help="save bandwidth results")
+    bandwidth_parser.add_argument('--no-save', dest='save', action='store_false', help="don't save bandwidth results (default)")
+    bandwidth_parser.add_argument('--path', action='store_true', help="return the ping file path")
+    bandwidth_parser.add_argument('--reset', action='store_true', help='purge the ping file')
+    bandwidth_parser.add_argument('--list', action='store_true', help="list ping history")
 
-    if target:
-        config['Target'] = target
-        utils.write_resource('speedtest.data', 'config.json', config)
+    args = parser.parse_args()
+    config_data = utils.read_json_file(CONFIGFILE)
 
-    if count:
-        config['Count'] = count
-        utils.write_resource('speedtest.data', 'config.json', config)
+    if args.command == 'log':
+        logfile = utils.get_resource_path(LOGFILE)
 
-    if size:
-        config['Size'] = size
-        utils.write_resource('speedtest.data', 'config.json', config)
+        if args.path:
+            return logfile
+        if args.reset:
+            utils.reset_file(logfile)
+            return
+        if args.list:
+            with open(logfile, mode='r', encoding='utf-8') as file_handler:
+                log = file_handler.readlines()
 
-    if reset:
-        utils.reset_resource('speedtest.data', f"{reset}.json")
-        return
+                if not log:
+                    utils.print_on_warning("Nothing to read because the log file is empty")
+                    return
 
-    if list:
-        click.secho("\nApplication Settings", fg='bright_magenta')
-        utils.print_dict('Name', 'Value', config)
-        return
+                parse = lambda line: line.strip('\n').split('::')
+                Entry = namedtuple('Entry', 'timestamp levelname lineno name message')
 
-@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Ping a remote host and get the response data.", fg='bright_green'))
-@click.option('--target', type=click.STRING, help=style("Set the remote hostname or IP address to ping.", fg='bright_yellow'))
-@click.option('--count', type=click.INT, help=style("Set how many times to attempt the ping.", fg='bright_yellow'))
-@click.option('--size', type=click.INT, help=style("Set the size of the entire package to send.", fg='bright_yellow'))
-@click.option('--reset', is_flag=True, help=style("Wipe out your ping save file.", fg='bright_yellow'))
-@click.option('--read', is_flag=True, default=False, help=style("Read your ping save file.", fg='bright_yellow'))
-@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='bright_yellow'))
-@click.pass_context
-def ping(ctx, target, count, size, reset, read, save):
-    config: dict = ctx.obj['CONFIG']
-    ping: dict = ctx.obj['PING']
-    target: str = target or config.get('Target', 'www.google.com')
-    count: int = count or config.get('Count', 4)
-    size: int = size or config.get('Size', 1)
+                tabulate = "{:<20} {:<5} {:<6} {:<22} {:<20}".format
 
-    if reset:
-        utils.reset_resource('speedtest.data', 'ping.json')
-        return
+                print('\n' + GREEN + tabulate('Timestamp', 'Line', 'Level', 'File Name', 'Message') + RESET_ALL)
 
-    if read:
-        pprint(ping, indent=2)
-        return
+                for line in log:
+                    entry = Entry(parse(line)[0], parse(line)[1], parse(line)[2], parse(line)[3], parse(line)[4])
+                    print(tabulate(entry.timestamp, entry.lineno.zfill(4), entry.levelname, entry.name, entry.message))
 
-    try:
-        with utils.CONSOLE.status('Running bandwidth test . . .', spinner='dots3') as _:        
-            results = core.test_ping(target, count, size)
+    if args.command == 'config':
+        config_file = utils.get_resource_path(CONFIGFILE)
 
-        click.secho(f"\nPing Results", fg='bright_magenta')
-        utils.print_dict('Name', 'Value', results)
+        if args.target:
+            config_data['Target'] = args.target
+            utils.write_json_file(config_file, config_data)
+        if args.count:
+            config_data['Count'] = args.count
+            utils.write_json_file(config_file, config_data)
+        if args.size:
+            config_data['Size'] = args.size
+            utils.write_json_file(config_file, config_data)
+        if args.threads:
+            config_data['Threads'] = args.threads
+            utils.write_json_file(config_file, config_data)
+        if args.path:
+            return config_file
+        if args.reset:
+            utils.reset_file(config_file)
+            return
+        if args.list:
+            utils.print_dict('Name', 'Value', config_data)
+            return
 
-        if save:
-            core.save(ping, results, Test.Ping)
-    except Exception as exception:
-        utils.logger.critical(f"The application failed to run a ping test: {exception}")
+    if args.command == 'ping':
+        ping_file = utils.get_resource_path(PINGFILE)
 
-@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Perform standard speedtest.net testing operations.", fg='bright_green'))
-@click.option('--threads', type=click.INT, help=style("Set the number of speedtest threads.", fg='bright_yellow'))
-@click.option('--upload/--no-upload', is_flag=True, default=True, help=style("Add upload stream to speedtest.", fg='bright_yellow'))
-@click.option('--download/--no-download', is_flag=True, default=True, help=style("Add download stream to speedtest.", fg='bright_yellow'))
-@click.option('--reset', is_flag=True, help=style("Wipe out your bandwidth save file.", fg='bright_yellow'))
-@click.option('--read', is_flag=True, default=False, help=style("Read your bandwidth save file.", fg='bright_yellow'))
-@click.option('--save/--no-save', is_flag=True, default=False, help=style("Store results to disk.", fg='bright_yellow'))
-@click.pass_context
-def bandwidth(ctx, threads, upload, download, reset, read, save):
-    bandwidth: dict = ctx.obj['BANDWIDTH']
+        if args.path:
+            return ping_file
+        if args.reset:
+            utils.reset_file(ping_file)
+            return
+        if args.list:
+            with open(ping_file, mode='r', encoding='utf-8') as file_handler:
+                reader = csv.DictReader(file_handler)
+                tabulate = "{:<20}{:<12}{:<9}{:<9}{:<13}{:<17}{:<11}".format
+                print('\n' + BRIGHT + GREEN + tabulate(*reader.fieldnames) + RESET_ALL)
+                for row in list(reader):
+                    print(tabulate(*row.values()))
+            print()
+            return
 
-    if reset:
-        utils.reset_resource('speedtest.data', 'bandwidth.json')
-        return
+        try:
+            target = args.target or config_data.get('Target', 'google.com')
+            count = args.count or config_data.get('Count', 4)
 
-    if read:
-        pprint(bandwidth, indent=2)
-        return
-    
-    try:
-        with utils.CONSOLE.status('Running bandwidth test . . .', spinner='dots3') as _:
-            results = core.test_bandwidth(threads, upload, download)
+            ping_data = core.test_ping(target, count, args.size or config_data.get('Size', 1))
 
-        click.secho("\nBandwidth Results", fg='bright_magenta')
-        utils.print_dict('Name', 'Value', results)
+            if args.verbose:
+                utils.print_dict('Name', 'Value', ping_data)
 
-        if save:
-            core.save(bandwidth, results, Test.Bandwidth)
-    except Exception as exception:
-        utils.logger.critical(f"The application failed to run a bandwidth test: {exception}")
+            if not args.verbose:
+                print(f"Pinged {BRIGHT}{YELLOW}{target}{RESET_ALL} {count} times {BRIGHT}{MAGENTA}({RESET_ALL}Package Lost: {ping_data['PackageLost']}{BRIGHT}{MAGENTA}){RESET_ALL}")
 
-@cli.command(context_settings=CONTEXT_SETTINGS, help=style("Plot bandwidth or ping history.", fg='bright_green'))
-@click.option('--history', type=click.Choice(['ping', 'bandwidth'], case_sensitive=False), help=style("Name of data set to plot.", fg='bright_yellow'))
-@click.pass_context
-def plot(ctx, history):
-    config: dict = ctx.obj['CONFIG']
-    ping: dict = ctx.obj['PING']
-    bandwidth: dict = ctx.obj['BANDWIDTH']
-    target: str = config.get('Target', 'www.google.com')
+            if args.save:
+                ping_data['DateTime'] = time()
+                ping_data['Target'] = target
+                ping_data['PingMin'] = float(ping_data['PingMin'].strip('ms').strip(' '))
+                ping_data['PingMax'] = float(ping_data['PingMax'].strip('ms').strip(' '))
+                ping_data['PackageSent'] = int(ping_data['PackageSent'].strip(' '))
+                ping_data['PackageReceived'] = int(ping_data['PackageReceived'].strip(' '))
+                ping_data['PackageLost'] = float(ping_data['PackageLost'].strip('%').strip(' '))
+                utils.write_csv(ping_file, ping_data)
 
-    if not history:
-        utils.print_on_warning("You need to specify an plot option. Run 'speedtest plot --help' to view this command's help page.")
-        return
+        except PermissionError as perm_error:
+            utils.print_on_error("You need root privileges in order to run this command.")
+            utils.logger.error(str(perm_error))
+        except Exception as error:
+            utils.print_on_error("Something unexpected happend. The responsible authorities have already been notified.")
+            utils.logger.error(str(error))
 
-    try:
-        with utils.CONSOLE.status('Plotting data . . .', spinner='dots3') as _:
-            core.plot_history(ping if history=='ping' else bandwidth, target, Test(history))
-    except KeyError:
-        utils.logger.warning(f"Attempted plot invocation with history={history}")
-        utils.print_on_error(f"No data to plot available. Run 'speedtest {history} --save' to store results to disk.")
-    except Exception as exception:
-        utils.logger.critical(f"Something went wrong while trying to plot the history for {history}: {exception}")
+    if args.command == 'bandwidth':
+        bandwidth_file = utils.get_resource_path(BANDWIDTHFILE)
+
+        if args.path:
+            return bandwidth_file
+        if args.reset:
+            utils.reset_file(bandwidth_file)
+            return
+        if args.list:
+            with open(bandwidth_file, mode='r', encoding='utf-8') as file_handler:
+                reader = csv.DictReader(file_handler)
+                tabulate = "{:<20}{:<9}{:<15}{:<10}{:<8}{:<17}".format
+                print('\n' + BRIGHT + GREEN + tabulate(*reader.fieldnames) + RESET_ALL)
+                for row in list(reader):
+                    print(tabulate(*row.values()))
+            print()
+            return
+
+        try:
+            bandwidth_data = core.test_bandwidth(args.threads or config_data.get('Threads', None))
+
+            if args.verbose:
+                utils.print_dict('Name', 'Value', bandwidth_data)
+
+            if not args.verbose:
+                print(f"Download: {BRIGHT}{YELLOW}{bandwidth_data['Download']}{RESET_ALL} | Upload: {BRIGHT}{YELLOW}{bandwidth_data['Upload']}{RESET_ALL}")
+
+            if args.save:
+                bandwidth_data['DateTime'] = time()
+                bandwidth_data['Download'] = bandwidth_data['Download'].strip('MB/s').strip(' ')
+                bandwidth_data['Upload'] = bandwidth_data['Upload'].strip('MB/s').strip(' ')
+                utils.write_csv(bandwidth_file, bandwidth_data)
+
+        except Exception as error:
+            utils.print_on_error("Something unexpected happend. The responsible authorities have already been notified.")
+            utils.logger.error(str(error))

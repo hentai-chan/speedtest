@@ -4,6 +4,6 @@ from .cli import cli
 
 if __name__ == '__main__':
     try:
-        cli(obj={})
+        cli()
     except KeyboardInterrupt:
         pass
